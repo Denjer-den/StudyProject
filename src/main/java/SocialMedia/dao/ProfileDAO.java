@@ -9,7 +9,6 @@ import java.util.List;
 
 @Component
 public class ProfileDAO {
-    private static int PEOPLE_COUNT;
 
     private static final String URL = "jdbc:mysql://localhost:3306/test?verifyServerCertificate=false&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
     private static final String userName = "root";
@@ -52,36 +51,63 @@ public class ProfileDAO {
     }
 
     public Profile show(int id) {
-//        return usersProfile.stream().filter(profile -> profile.getId() == id).findAny().orElse(null);
-        return null;
+        Profile profile = null;
+        try {
+            PreparedStatement preparedStatement =
+                    connection.prepareStatement("SELECT * FROM users WHERE id=?");
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+
+            profile = new Profile();
+
+            profile.setId(resultSet.getInt("id"));
+            profile.setName(resultSet.getString("name"));
+            profile.setAge(resultSet.getInt("age"));
+            profile.setEmail(resultSet.getString("email"));
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return profile;
     }
 
     public void save(Profile profile) {
 
-//        profile.setId(++COUNT);
-//        usersProfile.add(profile);
         try {
-            Statement statement = connection.createStatement();
-            statement.executeUpdate("INSERT INTO users set name ='" + profile.getName() + "'," + "age = " + profile.getAge() + ", email ='" + profile.getEmail() + "'");
-
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT  INTO users SET name = ?, age =?, email=?");
+            preparedStatement.setString(1, profile.getName());
+            preparedStatement.setInt(2, profile.getAge());
+            preparedStatement.setString(3, profile.getEmail());
+            preparedStatement.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
     }
 
     public void update(int id, Profile updateProfile) {
-//        Profile profileToBeUpdated = show(id);
-//        profileToBeUpdated.setName(updateProfile.getName());
-//        profileToBeUpdated.setAge(updateProfile.getAge());
-//        profileToBeUpdated.setEmail(updateProfile.getEmail());
-//        profileToBeUpdated.setPassword(updateProfile.getPassword());
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE users Set name=?, age = ?, email=? WHERE id=?");
+            preparedStatement.setString(1, updateProfile.getName());
+            preparedStatement.setInt(2, updateProfile.getAge());
+            preparedStatement.setString(3, updateProfile.getEmail());
+            preparedStatement.setInt(4, id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
     }
 
     public void delete(int id) {
-//        usersProfile.removeIf(p -> p.getId() == id);
-    }
-//    public boolean checkPassword(Profile profile, int id){
-//        return profile.getPassword().equals(usersProfile.get(id).getPassword());
-//    }
 
+        try {
+            PreparedStatement preparedStatement = preparedStatement = connection.prepareStatement("DELETE FROM users WHERE id = ?");
+            preparedStatement.setInt(1,id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+    }
 }
+
