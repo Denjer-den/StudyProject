@@ -74,4 +74,3 @@ public class SocialMediaController {
         return "redirect:/social-media";
     }
 }
-

@@ -1,113 +1,100 @@
 package SocialMedia.dao;
 
 import SocialMedia.Profile;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.springframework.stereotype.Component;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class ProfileDAO {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/test?verifyServerCertificate=false&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-    private static final String userName = "root";
-    private static final String password = "1234";
+    private static SessionFactory factory = null;
+    private static Session session = null;
 
-    private static Connection connection;
-
-    static {
+    public List index() {
+        List usersProfile;
+        factory = new Configuration().configure("hibernate.cfg.xml")
+                .addAnnotatedClass(Profile.class)
+                .buildSessionFactory();
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            connection = DriverManager.getConnection(URL, userName, password);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
-
-    public List<Profile> index() {
-        List<Profile> usersProfile = new ArrayList<>();
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
-            while (resultSet.next()) {
-                Profile profile1 = new Profile();
-                profile1.setId(resultSet.getInt("id"));
-                profile1.setName(resultSet.getString("name"));
-                profile1.setAge(resultSet.getInt("age"));
-                profile1.setEmail(resultSet.getString("email"));
-
-                usersProfile.add(profile1);
-
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            usersProfile = session.createQuery("from Profile").getResultList();
+            session.getTransaction().commit();
+        } finally {
+            session.close();
+            factory.close();
         }
         return usersProfile;
     }
 
     public Profile show(int id) {
-        Profile profile = null;
+        factory = new Configuration().configure("hibernate.cfg.xml")
+                .addAnnotatedClass(Profile.class)
+                .buildSessionFactory();
+        Profile profile;
         try {
-            PreparedStatement preparedStatement =
-                    connection.prepareStatement("SELECT * FROM users WHERE id=?");
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-
-            profile = new Profile();
-
-            profile.setId(resultSet.getInt("id"));
-            profile.setName(resultSet.getString("name"));
-            profile.setAge(resultSet.getInt("age"));
-            profile.setEmail(resultSet.getString("email"));
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            profile = session.get(Profile.class, id);
+            session.getTransaction().commit();
+        } finally {
+            session.close();
+            factory.close();
         }
         return profile;
     }
 
     public void save(Profile profile) {
-
+        factory = new Configuration().configure("hibernate.cfg.xml")
+                .addAnnotatedClass(Profile.class)
+                .buildSessionFactory();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT  INTO users SET name = ?, age =?, email=?");
-            preparedStatement.setString(1, profile.getName());
-            preparedStatement.setInt(2, profile.getAge());
-            preparedStatement.setString(3, profile.getEmail());
-            preparedStatement.executeUpdate();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            session.save(profile);
+            session.getTransaction().commit();
+        } finally {
+            session.close();
+            factory.close();
         }
     }
 
     public void update(int id, Profile updateProfile) {
+        factory = new Configuration().configure("hibernate.cfg.xml")
+                .addAnnotatedClass(Profile.class)
+                .buildSessionFactory();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE users Set name=?, age = ?, email=? WHERE id=?");
-            preparedStatement.setString(1, updateProfile.getName());
-            preparedStatement.setInt(2, updateProfile.getAge());
-            preparedStatement.setString(3, updateProfile.getEmail());
-            preparedStatement.setInt(4, id);
-            preparedStatement.executeUpdate();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            Profile profile = session.get(Profile.class,id);
+            profile.setName(updateProfile.getName());
+            profile.setAge(updateProfile.getAge());
+            profile.setEmail(updateProfile.getEmail());
+            session.getTransaction().commit();
+        } finally {
+            session.close();
+            factory.close();
         }
-
     }
 
     public void delete(int id) {
-
+        factory = new Configuration().configure("hibernate.cfg.xml")
+                .addAnnotatedClass(Profile.class)
+                .buildSessionFactory();
         try {
-            PreparedStatement preparedStatement = preparedStatement = connection.prepareStatement("DELETE FROM users WHERE id = ?");
-            preparedStatement.setInt(1,id);
-            preparedStatement.executeUpdate();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            Profile profile = session.get(Profile.class, id);
+            session.delete(profile);
+            session.getTransaction().commit();
+        } finally {
+            session.close();
+            factory.close();
         }
-
     }
 }
 

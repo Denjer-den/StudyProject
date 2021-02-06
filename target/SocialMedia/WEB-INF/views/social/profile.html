@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+</head>
+<body>
+<p th:text="${profile.getName() + ', ' + 'id' + profile.getId()}">VALUE</p>
+<p th:text="${'Age: ' + profile.getAge()}">VALUE</p>
+<p th:text="${'Email: ' + profile.getEmail()}">VALUE</p>
+<a th:href="@{/social-media/id{id}/edit(id=${profile.getId()})}">Edit profile</a>
+<p></p>
+<a href="/social-media">Exit</a>
+<p></p>
+<form th:method="DELETE" th:action="@{/social-media/id{id}(id=${profile.getId()})}">
+    <input type="submit" value="Delete my profile"/>
+</form>
+
+
+</body>
+</html>
